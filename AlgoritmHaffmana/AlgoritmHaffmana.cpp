@@ -11,19 +11,18 @@ struct codedChar
 
 codedChar ValueChars[256];
 
-codedChar fillChar(codedChar arrOfChar[], int lengthArr)
+void fillChar(codedChar arrOfChar[], int lengthArr)
 {
 	for (int i = 0; i <= lengthArr; ++i)
 	{
 		arrOfChar[i].symbol = char(i);
 	}
-	return *arrOfChar;
 }
 
-void doCountChar(char* fnameOriginal)
+void countChars(char* fnameOriginal)
 {
 	FILE* readingFile;
-	readingFile = fopen(fnameOriginal, "r");
+	readingFile = fopen(fnameOriginal, "rb");
 	int takenChar;
 	while ((takenChar = fgetc(readingFile)) != EOF)
 	{
@@ -55,16 +54,6 @@ void sortArrOfChar(codedChar arrOfChar[], int lengthArr)
 	}
 }
 
-void showByte(char byte)
-{
-	int i;
-	for (i = sizeof(byte)* 8 - 1; i >= 0; --i)
-	{
-		printf("%d", byte&(1 << i) ? 1 : 0);
-	}
-	printf(" ");
-}
-
 void writeCharsetInFile(char* fnameForCoding, codedChar sortedArr[], int lengthArr);
 
 void encodeFile(char* fnameForCoding, char* fnameOriginal, codedChar sortedArr[], int lengthArr)
@@ -72,8 +61,8 @@ void encodeFile(char* fnameForCoding, char* fnameOriginal, codedChar sortedArr[]
 	writeCharsetInFile(fnameForCoding, sortedArr, 255);
 
 	FILE *codingFile, *originalFile;
-	codingFile = fopen(fnameForCoding, "a");
-	originalFile = fopen(fnameOriginal, "r");
+	codingFile = fopen(fnameForCoding, "ab");
+	originalFile = fopen(fnameOriginal, "rb");
 	char writedByte = 0, currentPosOfByte = 0;
 	char takenChar;
 	int checkingChar;
@@ -90,7 +79,6 @@ void encodeFile(char* fnameForCoding, char* fnameOriginal, codedChar sortedArr[]
 				}
 				else
 				{
-					//showByte(writedByte);
 					fputc(writedByte, codingFile);
 					writedByte = 0;
 					currentPosOfByte = 0;
@@ -106,7 +94,6 @@ void encodeFile(char* fnameForCoding, char* fnameOriginal, codedChar sortedArr[]
 				}
 				else
 				{
-					//showByte(writedByte);
 					fputc(writedByte, codingFile);
 					writedByte = 0;
 					currentPosOfByte = 0;
@@ -122,7 +109,6 @@ void encodeFile(char* fnameForCoding, char* fnameOriginal, codedChar sortedArr[]
 		}
 		fputc(writedByte, codingFile); //Запись последнего байта.
 	}
-	//showByte(writedByte);
 	fclose(codingFile);
 	fclose(originalFile);
 }
@@ -130,7 +116,7 @@ void encodeFile(char* fnameForCoding, char* fnameOriginal, codedChar sortedArr[]
 void writeCharsetInFile(char* fnameForCoding, codedChar sortedArr[], int lengthArr)
 {
 	FILE* codingFile;
-	codingFile = fopen(fnameForCoding, "w");
+	codingFile = fopen(fnameForCoding, "wb");
 	int i = 0;
 	while (sortedArr[i].countChar != 0)
 	{
@@ -147,8 +133,8 @@ void writeCharsetInFile(char* fnameForCoding, codedChar sortedArr[], int lengthA
 void decodeFile(char* fnameEncoded, char* fnameDecoded)
 {
 	FILE *encodedFile, *decodedFile;
-	encodedFile = fopen(fnameEncoded, "r");
-	decodedFile = fopen(fnameDecoded, "w");
+	encodedFile = fopen(fnameEncoded, "rb");
+	decodedFile = fopen(fnameDecoded, "wb");
 	char countChar = fgetc(encodedFile);
 	char *arrOfChar = (char*)calloc(countChar, sizeof(char));
 	for (int i = 0; i < countChar; ++i)
@@ -222,7 +208,7 @@ void scanf_str(char *str)
 void interfaceEncoding()
 {
 	printf("Введите путь файла который нужно архивировать: ");
-	char *fnameOriginal = (char*)calloc(500, sizeof(char));
+	char *fnameOriginal = (char*)malloc(512 * sizeof(char));
 	scanf_str(fnameOriginal);
 	while (_access(fnameOriginal, 0) != 0)
 	{
@@ -230,10 +216,10 @@ void interfaceEncoding()
 		scanf_str(fnameOriginal);
 	}
 	printf("Теперь введите путь куда сохранить кодированный файл: ");
-	char *fnameCoded = (char*)calloc(500, sizeof(char));
+	char *fnameCoded = (char*)malloc(512 * sizeof(char));
 	scanf_str(fnameCoded);
 	fillChar(ValueChars, 255);
-	doCountChar(fnameOriginal);
+	countChars(fnameOriginal);
 	sortArrOfChar(ValueChars, 255);
 	encodeFile(fnameCoded, fnameOriginal, ValueChars, 255);
 	free(fnameOriginal); 
@@ -243,7 +229,7 @@ void interfaceEncoding()
 void interfaceDecoding()
 {
 	printf("Введите путь файла, который нужно разархивировать: ");
-	char *fnameCoded = (char*)calloc(500, sizeof(char));
+	char *fnameCoded = (char*)malloc(512 * sizeof(char));
 	scanf_str(fnameCoded);
 	while (_access(fnameCoded, 0) != 0)
 	{
@@ -251,7 +237,7 @@ void interfaceDecoding()
 		scanf_str(fnameCoded);
 	}
 	printf("Теперь введите путь куда сохранить раскодированный файл: ");
-	char *fnameDecoded = (char*)calloc(500, sizeof(char));
+	char *fnameDecoded = (char*)malloc(512 * sizeof(char));
 	scanf_str(fnameDecoded);
 	decodeFile(fnameCoded, fnameDecoded);
 	free(fnameCoded);
